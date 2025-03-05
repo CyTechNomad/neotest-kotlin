@@ -13,7 +13,7 @@ TreesitterQuery.value = [[
        )@InvocationOfAnnotation
       )@annotation
     )@annotions
-  ) @Tests
+  ) @test.name
 )
 
 ]]
