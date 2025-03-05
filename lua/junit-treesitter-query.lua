@@ -10,10 +10,10 @@ TreesitterQuery.value = [[
        (constructor_invocation
         (user_type)@AnnotationFunctionName
         (#match? @AnnotationFunctionName "ParameterizedTest")
-       )@InvocationOfAnnotation
+       )@test.name
       )@annotation
     )@annotions
-  ) @test.name
+  ) @test.definition
 )
 
 ]]
