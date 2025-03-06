@@ -8,8 +8,7 @@ TreesitterQuery.value = [[
     (modifiers
       (annotation
        (constructor_invocation
-        (user_type)@AnnotationFunctionName
-        (#match? @AnnotationFunctionName "ParameterizedTest")
+        (user_type)@AnnotationFunctionName (#match? @AnnotationFunctionName "ParameterizedTest")
        )@test.name
       )@annotation
     )@annotions
