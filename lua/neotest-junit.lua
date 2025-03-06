@@ -23,9 +23,6 @@ function adapter.is_test_file(name, rel_path, root)
 end
 
 local function get_match_type(captured_nodes)
-    if captured_nodes["namespace.name"] then
-        return "namespace"
-    end
     if captured_nodes["test.name"] then
         return "test"
     end

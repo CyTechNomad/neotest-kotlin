@@ -7,15 +7,13 @@ TreesitterQuery.value = [[
   (function_declaration
     (modifiers
       (annotation
-       (constructor_invocation
-        (user_type) @AnnotationFunctionName
-        (value_arguments (string_literal) @test.name)?
+        (user_type
+            (type_identifier)))) @AnnotationFunctionName
+    (simple_identifier @test.name)
        )
       )
     )
-    name: (simple_identifier) @test.name
-  ) @test.definition
-  (function_body) @function.body (#match? @AnnotationFunctionName "ParameterizedTest")
+  ) @test.definition (#match? @AnnotationFunctionName "Test")
 )
 
 ]]
