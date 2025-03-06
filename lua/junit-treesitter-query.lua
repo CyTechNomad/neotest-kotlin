@@ -2,19 +2,15 @@ local TreesitterQuery = {}
 
 TreesitterQuery.value = [[
 
-;; Capture Kotlin test functions with @Test and @ParameterizedTest annotations
+;; Capture Kotlin test functions with @Test annotations
 (
   (function_declaration
     (modifiers
       (annotation
-        (user_type
-            (type_identifier)))) @AnnotationFunctionName
-    (simple_identifier @test.name)
-       )
-      )
-    )
-  ) @test.definition (#match? @AnnotationFunctionName "Test")
-)
+        (constructor_invocation
+          (user_type (simple_identifier) @annotation.name))))
+    (simple_identifier @test.name))
+) @test.definition (#match? @annotation.name "Test")
 
 ]]
 return TreesitterQuery
