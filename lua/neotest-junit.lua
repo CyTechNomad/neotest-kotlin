@@ -22,15 +22,9 @@ function adapter.is_test_file(name, rel_path, root)
     return filter.is_test_file(name)
 end
 
-local function get_match_type(captured_nodes)
-    if captured_nodes["test.name"] then
-        return "test"
-    end
-end
 
 function adapter.build_position(file_path, source, captured_nodes)
-    local match_type = get_match_type(captured_nodes)
-    local definition = captured_nodes[match_type .. ".definition"]
+    local definition = captured_nodes["test.definition"]
 
     -- Extract test function name if present
     local function_name = captured_nodes["test.name"]
@@ -38,7 +32,7 @@ function adapter.build_position(file_path, source, captured_nodes)
         or nil
 
     local build_position = {
-        type = match_type,
+        type = "test",
         path = file_path,
         range = { definition:range() },
         name = function_name, -- Store the function name for later use

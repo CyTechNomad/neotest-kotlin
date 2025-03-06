@@ -8,7 +8,8 @@ TreesitterQuery.value = [[
       (annotation
           (user_type (type_identifier) @annotation_name (#eq? @annotation_name "Test"))))
     (simple_identifier) @test.name
-)@test.definition
+    (function_body) @test.definition
+)
 
 ]]
 return TreesitterQuery
