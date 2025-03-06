@@ -22,11 +22,22 @@ function adapter.is_test_file(name, rel_path, root)
     return filter.is_test_file(name)
 end
 
+local function get_match_type(captured_nodes)
+    print("captured_nodes: ", vim.inspect(captured_nodes))
+    if captured_nodes["namespace.name"] then
+        return "namespace"
+    end
+    if captured_nodes["test.name"] then
+        return "test"
+    end
+end
+
 function adapter.build_position(file_path, source, captured_nodes)
-    local definition = captured_nodes["function.body"]
+    local match_type = get_match_type(captured_nodes)
+    local definition = captured_nodes[match_type .. ".definition"]
 
     local build_position = {
-        type = "test.definition",
+        type = match_type,
         path = file_path,
         range = { definition:range() },
     }

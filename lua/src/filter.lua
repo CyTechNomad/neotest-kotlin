@@ -26,7 +26,7 @@ M.is_test_file = function(file_path)
 	if string.find(file_path, "src/main") then
 		return false
 	end
-
+    print("is_test_file: ", file_path)
 	return true
 end
 
