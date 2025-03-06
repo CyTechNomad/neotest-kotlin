@@ -1,4 +1,4 @@
-local lib = require('neotest.lib')
+local lib = require("neotest.lib")
 local position_parser = require("src.position-parser")
 local package_query = require("src.treesitter.package-query")
 local class_query = require("src.treesitter.class-query")
@@ -15,7 +15,7 @@ function adapter.root(dir)
 end
 
 function adapter.filter_dir(name, rel_path, root)
-    return filter.test_directory(name)
+    return filter.is_test_directory(name)
 end
 
 function adapter.is_test_file(name, rel_path, root)
@@ -23,7 +23,6 @@ function adapter.is_test_file(name, rel_path, root)
 end
 
 local function get_match_type(captured_nodes)
-    print("captured_nodes: ", vim.inspect(captured_nodes))
     if captured_nodes["namespace.name"] then
         return "namespace"
     end
@@ -36,16 +35,22 @@ function adapter.build_position(file_path, source, captured_nodes)
     local match_type = get_match_type(captured_nodes)
     local definition = captured_nodes[match_type .. ".definition"]
 
+    -- Extract test function name if present
+    local function_name = captured_nodes["test.name"]
+        and vim.treesitter.get_node_text(captured_nodes["test.name"], source)
+        or nil
+
     local build_position = {
         type = match_type,
         path = file_path,
         range = { definition:range() },
+        name = function_name, -- Store the function name for later use
     }
 
     return build_position
 end
 
---- a file path, parse all the tests within it.
+--- Discover test positions within a file using Treesitter.
 ---@async
 ---@param file_path string Absolute file path
 ---@return neotest.Tree | nil
@@ -62,25 +67,29 @@ end
 function adapter.build_spec(args)
     local results_path = async.fn.tempname() .. ".json"
 
-    -- Write something so there is a place to stream to...
+    -- Ensure there's an output file to stream test results
     lib.files.write(results_path, "")
 
     local tree = args.tree
-
     if not tree then
         return
     end
 
     local pos = tree:data()
-
     local root = adapter.root(pos.path)
+
+    -- Extract package and class name
     local pkg = position_parser.get_first_match_string(pos.path, package_query)
     local className = position_parser.get_first_match_string(pos.path, class_query)
     local specPackage = pkg .. "." .. className
-    local tests = "*"
 
-    local gradle_command = command.parse(tests, specPackage, results_path)
+    -- Extract function name from `pos`
+    local test_function = pos.name or "*"
 
+    -- Generate the Gradle command
+    local gradle_command = command.parse(test_function, specPackage, results_path)
+
+    -- Setup streaming for results
     local stream_data, stop_stream = lib.files.stream_lines(results_path)
 
     print("command: " .. gradle_command)
@@ -101,11 +110,9 @@ function adapter.build_spec(args)
                 local new_results = stream_data()
                 local success, parsed_result = pcall(output_parser.lines_to_results, new_results, pos.path, specPackage)
                 if not success then
-                    print("An error ocurred while attempting to stream data to result: " ..
-                        vim.inspect(err) .. " new_results: " .. vim.inspect(new_results))
+                    print("An error occurred while streaming data: " .. vim.inspect(err) .. " new_results: " .. vim.inspect(new_results))
                     return nil
                 else
-                    -- merge the parsed results with all results...
                     for k, v in pairs(parsed_result) do all_results[k] = v end
                     return parsed_result
                 end
@@ -113,12 +120,6 @@ function adapter.build_spec(args)
         end,
     }
 end
-
----@class neotest.Result
----@field status neotest.ResultStatus
----@field output? string Path to file containing full output data
----@field short? string Shortened output string
----@field errors? neotest.Error[]
 
 ---@async
 ---@param spec neotest.RunSpec
@@ -131,3 +132,4 @@ function adapter.results(spec, result, tree)
 end
 
 return adapter
+

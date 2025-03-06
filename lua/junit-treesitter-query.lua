@@ -2,18 +2,20 @@ local TreesitterQuery = {}
 
 TreesitterQuery.value = [[
 
-;; Capture parameter sources for parameterized tests in Kotlin
+;; Capture Kotlin test functions with @Test and @ParameterizedTest annotations
 (
   (function_declaration
+    name: (simple_identifier) @test.name
+    body: (function_body) @function.body
     (modifiers
       (annotation
        (constructor_invocation
-        (user_type)@AnnotationFunctionName 
-       )@test.name
-      )@annotation
-    )@annotions
+        (user_type) @AnnotationFunctionName
+       )
+      )
+    )
   ) @test.definition
-  (function_body)@function.body (#match? @AnnotationFunctionName "ParameterizedTest")
+  (#match? @AnnotationFunctionName "Test$|ParameterizedTest") ;; Match both @Test and @ParameterizedTest
 )
 
 ]]
